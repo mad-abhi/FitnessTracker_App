@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Goals | FitTrack{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Fitness Goals</h1>
+        <a href="{{ url_for('goals.create_goal') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Goal
+        </a>
+    </div>
+    
+    <!-- Filter Options -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchGoals" placeholder="Search goals">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filterType">
+                        <option value="all">All Types</option>
+                        <option value="strength">Strength</option>
+                        <option value="cardio">Cardio</option>
+                        <option value="weight">Weight</option>
+                        <option value="habit">Habit</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filterStatus">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Goals List -->
+    {% if goals %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="goalsGrid">
+            {% for goal in goals %}
+                <div class="col goal-item" 
+                     data-name="{{ goal.name|lower }}" 
+                     data-type="{{ goal.type|lower if goal.type else 'other' }}"
+                     data-status="{{ 'completed' if goal.completed else 'active' }}">
+                    <div class="card h-100 {{ 'border-success' if goal.completed else '' }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="card-title mb-0">{{ goal.name }}</h5>
+                                <div>
+                                    {% if goal.completed %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% endif %}
+                                    <span class="badge bg-{{ 'primary' if goal.type == 'strength' else 'info' if goal.type == 'cardio' else 'warning' if goal.type == 'weight' else 'secondary' }}">
+                                        {{ goal.type|title if goal.type else 'Other' }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <p class="card-text text-muted small mb-3">
+                                {% if goal.description %}
+                                    {{ goal.description }}
+                                {% else %}
+                                    No description provided.
+                                {% endif %}
+                            </p>
+                            
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>Progress</small>
+                                    <small>{{ (goal.current_value / goal.target_value * 100)|int if goal.target_value else 0 }}%</small>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    {% set progress = (goal.current_value / goal.target_value * 100) if goal.target_value else 0 %}
+                                    <div class="progress-bar bg-{{ 'success' if goal.completed else 'primary' }}" role="progressbar" 
+                                        style="width: {{ progress }}%;" 
+                                        aria-valuenow="{{ progress }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <small class="text-muted d-block">Current</small>
+                                    <span>{{ goal.current_value }} {{ goal.unit }}</span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Target</small>
+                                    <span>{{ goal.target_value }} {{ goal.unit }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between text-muted small">
+                                <span>Started: {{ goal.start_date.strftime('%b %d, %Y') }}</span>
+                                {% if goal.end_date %}
+                                    <span>Due: {{ goal.end_date.strftime('%b %d, %Y') }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <div class="d-flex gap-2">
+                                {% if not goal.completed %}
+                                    <a href="{{ url_for('goals.toggle_goal_completion', goal_id=goal.id) }}" class="btn btn-outline-success flex-grow-1">
+                                        <i class="bi bi-check-lg me-1"></i> Mark as Complete
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('goals.toggle_goal_completion', goal_id=goal.id) }}" class="btn btn-outline-secondary flex-grow-1">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Mark as Active
+                                    </a>
+                                {% endif %}
+                                <a href="{{ url_for('goals.edit_goal', goal_id=goal.id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- No results message -->
+        <div id="noResults" class="text-center py-5 d-none">
+            <p class="text-muted mb-0">No goals found matching your search criteria.</p>
+        </div>
+        
+    {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-flag text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h4>No Goals Set</h4>
+            <p class="text-muted">Start setting fitness goals to track your progress.</p>
+            <a href="{{ url_for('goals.create_goal') }}" class="btn btn-primary mt-2">Set Your First Goal</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('goalsGrid')) {
+            const searchInput = document.getElementById('searchGoals');
+            const filterType = document.getElementById('filterType');
+            const filterStatus = document.getElementById('filterStatus');
+            const goalsGrid = document.getElementById('goalsGrid');
+            const noResults = document.getElementById('noResults');
+            const goalItems = document.querySelectorAll('.goal-item');
+            
+            function filterGoals() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedType = filterType.value.toLowerCase();
+                const selectedStatus = filterStatus.value.toLowerCase();
+                
+                let visibleCount = 0;
+                
+                goalItems.forEach(item => {
+                    const name = item.dataset.name;
+                    const type = item.dataset.type;
+                    const status = item.dataset.status;
+                    
+                    const matchesSearch = name.includes(searchTerm);
+                    const matchesType = selectedType === 'all' || type === selectedType;
+                    const matchesStatus = selectedStatus === 'all' || status === selectedStatus;
+                    
+                    if (matchesSearch && matchesType && matchesStatus) {
+                        item.classList.remove('d-none');
+                        visibleCount++;
+                    } else {
+                        item.classList.add('d-none');
+                    }
+                });
+                
+                if (visibleCount === 0) {
+                    goalsGrid.classList.add('d-none');
+                    noResults.classList.remove('d-none');
+                } else {
+                    goalsGrid.classList.remove('d-none');
+                    noResults.classList.add('d-none');
+                }
+            }
+            
+            searchInput.addEventListener('input', filterGoals);
+            filterType.addEventListener('change', filterGoals);
+            filterStatus.addEventListener('change', filterGoals);
+        }
+    });
+</script>
+{% endblock %}

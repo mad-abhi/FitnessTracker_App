@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | FitTrack{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Profile</h1>
+    </div>
+    
+    <div class="row">
+        <!-- User Profile Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if current_user.profile_picture %}
+                            <img src="{{ current_user.profile_picture }}" alt="{{ current_user.name }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto" style="width: 120px; height: 120px;">
+                                <i class="bi bi-person text-primary" style="font-size: 3rem;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="card-title mb-1">{{ current_user.name }}</h5>
+                    <p class="text-muted mb-3">@{{ current_user.username }}</p>
+                    
+                    <div class="d-grid">
+                        <button class="btn btn-outline-primary" id="editProfileBtn">
+                            <i class="bi bi-pencil me-1"></i> Edit Profile
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer text-center bg-white">
+                    <small class="text-muted">Member since {{ current_user.created_at.strftime('%B %d, %Y') }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Stats -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Activity Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 col-6 mb-3 mb-md-0">
+                            <h3 class="mb-1">{{ stats.total_workouts }}</h3>
+                            <p class="text-muted mb-0">Workouts</p>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3 mb-md-0">
+                            <h3 class="mb-1">{{ stats.total_exercises }}</h3>
+                            <p class="text-muted mb-0">Exercises</p>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <h3 class="mb-1">{{ stats.active_goals }}</h3>
+                            <p class="text-muted mb-0">Active Goals</p>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <h3 class="mb-1">{{ stats.completed_goals }}</h3>
+                            <p class="text-muted mb-0">Completed Goals</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Settings -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Account Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Change Password</h6>
+                        <form method="POST" action="{{ url_for('auth.change_password') }}" id="passwordForm" class="d-none">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label for="current_password" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="new_password" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-secondary me-md-2" id="cancelPasswordBtn">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Update Password</button>
+                            </div>
+                        </form>
+                        <button class="btn btn-outline-primary" id="showPasswordFormBtn">Change Password</button>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-4">
+                        <h6>Email Address</h6>
+                        <p>{{ current_user.email or 'No email address provided' }}</p>
+                        <form method="POST" action="{{ url_for('auth.update_email') }}" id="emailForm" class="d-none">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email or '' }}" required>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-secondary me-md-2" id="cancelEmailBtn">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Update Email</button>
+                            </div>
+                        </form>
+                        <button class="btn btn-outline-primary" id="showEmailFormBtn">{{ 'Update' if current_user.email else 'Add' }} Email</button>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div>
+                        <h6 class="text-danger">Danger Zone</h6>
+                        <p class="text-muted">Delete your account and all of your data</p>
+                        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            <i class="bi bi-trash me-1"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Account Modal -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteAccountModalLabel">Delete Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone.
+                    </div>
+                    <p>Are you sure you want to delete your account? All of your data, including workouts, exercises, and goals will be permanently removed.</p>
+                    <form id="deleteAccountForm">
+                        <div class="mb-3">
+                            <label for="confirmDelete" class="form-label">Type "DELETE" to confirm</label>
+                            <input type="text" class="form-control" id="confirmDelete" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('auth.delete_account') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger" id="deleteAccountBtn" disabled>Delete Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('auth.update_profile') }}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3 text-center">
+                            {% if current_user.profile_picture %}
+                                <img src="{{ current_user.profile_picture }}" alt="{{ current_user.name }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
+                                    <i class="bi bi-person text-primary" style="font-size: 2.5rem;"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <label for="profile_picture" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-upload me-1"></i> Upload Photo
+                                </label>
+                                <input type="file" class="d-none" id="profile_picture" name="profile_picture" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ current_user.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password form toggle
+        const passwordForm = document.getElementById('passwordForm');
+        const showPasswordFormBtn = document.getElementById('showPasswordFormBtn');
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+        
+        showPasswordFormBtn.addEventListener('click', function() {
+            passwordForm.classList.remove('d-none');
+            showPasswordFormBtn.classList.add('d-none');
+        });
+        
+        cancelPasswordBtn.addEventListener('click', function() {
+            passwordForm.classList.add('d-none');
+            showPasswordFormBtn.classList.remove('d-none');
+        });
+        
+        // Email form toggle
+        const emailForm = document.getElementById('emailForm');
+        const showEmailFormBtn = document.getElementById('showEmailFormBtn');
+        const cancelEmailBtn = document.getElementById('cancelEmailBtn');
+        
+        showEmailFormBtn.addEventListener('click', function() {
+            emailForm.classList.remove('d-none');
+            showEmailFormBtn.classList.add('d-none');
+        });
+        
+        cancelEmailBtn.addEventListener('click', function() {
+            emailForm.classList.add('d-none');
+            showEmailFormBtn.classList.remove('d-none');
+        });
+        
+        // Delete account confirmation
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        const confirmDeleteInput = document.getElementById('confirmDelete');
+        
+        confirmDeleteInput.addEventListener('input', function() {
+            deleteAccountBtn.disabled = confirmDeleteInput.value !== 'DELETE';
+        });
+        
+        // Edit profile modal
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        const editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+        
+        editProfileBtn.addEventListener('click', function() {
+            editProfileModal.show();
+        });
+    });
+</script>
+{% endblock %}

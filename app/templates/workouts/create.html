@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Workout | FitTrack{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="mb-4">
+        <a href="{{ url_for('workouts.workout_list') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Workouts
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h4 class="card-title mb-0">Create New Workout</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('workouts.create_workout') }}" id="workoutForm">
+                {{ form.hidden_tag() }}
+                
+                <!-- Workout Details Section -->
+                <div class="mb-4">
+                    <h5 class="mb-3">Workout Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            {{ form.name.label(class="form-label") }}
+                            {% if form.name.errors %}
+                                {{ form.name(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.name(class="form-control") }}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.type.label(class="form-label") }}
+                            {% if form.type.errors %}
+                                {{ form.type(class="form-select is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.type(class="form-select") }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            {{ form.date.label(class="form-label") }}
+                            {% if form.date.errors %}
+                                {{ form.date(class="form-control is-invalid", type="date") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.date(class="form-control", type="date") }}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            {{ form.duration.label(class="form-label") }}
+                            {% if form.duration.errors %}
+                                {{ form.duration(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.duration.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.duration(class="form-control") }}
+                            {% endif %}
+                            <div class="form-text">In minutes</div>
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.calories_burned.label(class="form-label") }}
+                            {% if form.calories_burned.errors %}
+                                {{ form.calories_burned(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.calories_burned.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.calories_burned(class="form-control") }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.notes.label(class="form-label") }}
+                        {% if form.notes.errors %}
+                            {{ form.notes(class="form-control is-invalid", rows=3) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.notes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.notes(class="form-control", rows=3) }}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Exercises Section -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Exercises</h5>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="addExerciseBtn">
+                            <i class="bi bi-plus-lg me-1"></i> Add Exercise
+                        </button>
+                    </div>
+                    
+                    <div id="exercisesContainer">
+                        {% if form.exercises %}
+                            {% for exercise_form in form.exercises %}
+                                <div class="card mb-3 exercise-entry">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="mb-0">Exercise #{{ loop.index }}</h6>
+                                            <button type="button" class="btn btn-outline-danger btn-sm remove-exercise">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Exercise</label>
+                                            {{ exercise_form.exercise_id(class="form-select exercise-select") }}
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-4 mb-2 mb-md-0">
+                                                <label class="form-label">Sets</label>
+                                                {{ exercise_form.sets(class="form-control") }}
+                                            </div>
+                                            <div class="col-md-4 mb-2 mb-md-0">
+                                                <label class="form-label">Reps</label>
+                                                {{ exercise_form.reps(class="form-control") }}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Weight (kg)</label>
+                                                {{ exercise_form.weight(class="form-control") }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 mb-2 mb-md-0">
+                                                <label class="form-label">Duration (seconds)</label>
+                                                {{ exercise_form.duration(class="form-control") }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Distance (km)</label>
+                                                {{ exercise_form.distance(class="form-control") }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="form-label">Notes</label>
+                                            {{ exercise_form.notes(class="form-control", rows=2) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info" id="noExercisesMessage">
+                                <i class="bi bi-info-circle me-2"></i>
+                                No exercises added to this workout yet. Click "Add Exercise" to add exercises to your workout.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('workouts.workout_list') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Exercise template to clone when adding new exercises
+        const exerciseTemplate = `
+            <div class="card mb-3 exercise-entry">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">New Exercise</h6>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-exercise">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Exercise</label>
+                        <select class="form-select exercise-select" name="exercises-__index__-exercise_id" required>
+                            <option value="">Select an exercise</option>
+                            {% for exercise in available_exercises %}
+                                <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <label class="form-label">Sets</label>
+                            <input type="number" class="form-control" name="exercises-__index__-sets" min="0">
+                        </div>
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <label class="form-label">Reps</label>
+                            <input type="number" class="form-control" name="exercises-__index__-reps" min="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control" name="exercises-__index__-weight" min="0" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <label class="form-label">Duration (seconds)</label>
+                            <input type="number" class="form-control" name="exercises-__index__-duration" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Distance (km)</label>
+                            <input type="number" class="form-control" name="exercises-__index__-distance" min="0" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="exercises-__index__-notes" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const exercisesContainer = document.getElementById('exercisesContainer');
+        const addExerciseBtn = document.getElementById('addExerciseBtn');
+        const noExercisesMessage = document.getElementById('noExercisesMessage');
+        let exerciseIndex = {{ form.exercises|length if form.exercises else 0 }};
+        
+        // Add exercise button click handler
+        addExerciseBtn.addEventListener('click', function() {
+            // Hide the "no exercises" message if it exists
+            if (noExercisesMessage) {
+                noExercisesMessage.classList.add('d-none');
+            }
+            
+            // Create a new exercise entry
+            const newExercise = document.createElement('div');
+            newExercise.innerHTML = exerciseTemplate.replace(/__index__/g, exerciseIndex);
+            exercisesContainer.appendChild(newExercise.firstElementChild);
+            exerciseIndex++;
+            
+            // Add event listener to the remove button
+            addRemoveExerciseHandlers();
+        });
+        
+        // Remove exercise button click handler
+        function addRemoveExerciseHandlers() {
+            document.querySelectorAll('.remove-exercise').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.exercise-entry').remove();
+                    
+                    // Show the "no exercises" message if no exercises remain
+                    if (document.querySelectorAll('.exercise-entry').length === 0 && noExercisesMessage) {
+                        noExercisesMessage.classList.remove('d-none');
+                    }
+                    
+                    // Update the exercise numbers
+                    updateExerciseNumbers();
+                });
+            });
+        }
+        
+        // Update exercise numbers
+        function updateExerciseNumbers() {
+            document.querySelectorAll('.exercise-entry').forEach((entry, index) => {
+                const title = entry.querySelector('h6');
+                if (title) {
+                    title.textContent = `Exercise #${index + 1}`;
+                }
+            });
+        }
+        
+        // Initialize the remove buttons
+        addRemoveExerciseHandlers();
+    });
+</script>
+{% endblock %}
