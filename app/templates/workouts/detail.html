@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ workout.name }} | FitTrack{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="mb-4">
+        <a href="{{ url_for('workouts.workout_list') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Workouts
+        </a>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h2 class="card-title mb-1">{{ workout.name }}</h2>
+                    <p class="text-muted mb-0">{{ workout.date.strftime('%B %d, %Y') }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('workouts.edit_workout', workout_id=workout.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Workout Summary -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-2">
+                                <i class="bi bi-clock text-primary fs-3"></i>
+                            </div>
+                            <h4 class="mb-0">{{ workout.duration or '0' }}</h4>
+                            <p class="text-muted mb-0">minutes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-2">
+                                <i class="bi bi-lightning-charge text-primary fs-3"></i>
+                            </div>
+                            <h4 class="mb-0">{{ workout.calories_burned or '0' }}</h4>
+                            <p class="text-muted mb-0">calories</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-2">
+                                <i class="bi bi-list-check text-primary fs-3"></i>
+                            </div>
+                            <h4 class="mb-0">{{ workout.workout_exercises.count() }}</h4>
+                            <p class="text-muted mb-0">exercises</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-2">
+                                <i class="bi bi-tag text-primary fs-3"></i>
+                            </div>
+                            <h4 class="mb-0">{{ workout.type|title if workout.type else 'Other' }}</h4>
+                            <p class="text-muted mb-0">type</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Workout Notes -->
+            {% if workout.notes %}
+                <div class="mb-4">
+                    <h5>Notes</h5>
+                    <p class="mb-0">{{ workout.notes }}</p>
+                </div>
+            {% endif %}
+            
+            <!-- Exercises List -->
+            <div>
+                <h5 class="mb-3">Exercises</h5>
+                {% if workout.workout_exercises.count() > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%;">Exercise</th>
+                                    <th class="text-center">Sets</th>
+                                    <th class="text-center">Reps</th>
+                                    <th class="text-center">Weight</th>
+                                    <th class="text-center">Duration</th>
+                                    <th class="text-center">Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for workout_exercise in workout.workout_exercises.all() %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if workout_exercise.exercise.image_url %}
+                                                    <div class="me-3" style="width: 50px; height: 50px; overflow: hidden; border-radius: 0.25rem;">
+                                                        <img src="{{ workout_exercise.exercise.image_url }}" alt="{{ workout_exercise.exercise.name }}" class="w-100 h-100 object-fit-cover">
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">{{ workout_exercise.exercise.name }}</h6>
+                                                    <small class="text-muted">{{ workout_exercise.exercise.muscle_groups }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center align-middle">{{ workout_exercise.sets or '-' }}</td>
+                                        <td class="text-center align-middle">{{ workout_exercise.reps or '-' }}</td>
+                                        <td class="text-center align-middle">{{ workout_exercise.weight|string + ' kg' if workout_exercise.weight else '-' }}</td>
+                                        <td class="text-center align-middle">{{ (workout_exercise.duration|string + ' sec') if workout_exercise.duration else '-' }}</td>
+                                        <td class="text-center align-middle">{{ (workout_exercise.distance|string + ' km') if workout_exercise.distance else '-' }}</td>
+                                    </tr>
+                                    {% if workout_exercise.notes %}
+                                        <tr class="table-light">
+                                            <td colspan="6" class="py-2">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-info-circle me-1"></i>
+                                                    {{ workout_exercise.notes }}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No exercises have been added to this workout yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block auth_content %}
+<div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-md-8 col-lg-6 text-center">
+        <h1 class="display-4 text-primary fw-bold mb-4">FitTrack</h1>
+        <p class="lead mb-5">Your personal fitness journey companion. Set goals, track workouts, and monitor your progress all in one place.</p>
+        <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-4">Log In</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg px-4">Register</a>
+        </div>
+        
+        <div class="mt-5 pt-5">
+            <div class="row text-start">
+                <div class="col-md-4 mb-4">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="bi bi-calendar-check fs-1 text-primary"></i>
+                        </div>
+                        <div>
+                            <h5>Track Workouts</h5>
+                            <p class="text-muted">Log your workouts and exercises to build consistency.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="bi bi-graph-up fs-1 text-primary"></i>
+                        </div>
+                        <div>
+                            <h5>Set Goals</h5>
+                            <p class="text-muted">Define and track your fitness goals to stay motivated.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="bi bi-bar-chart fs-1 text-primary"></i>
+                        </div>
+                        <div>
+                            <h5>Monitor Progress</h5>
+                            <p class="text-muted">View detailed analytics of your fitness journey.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

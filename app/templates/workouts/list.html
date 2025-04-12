@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Workouts | FitTrack{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Workouts</h1>
+        <a href="{{ url_for('workouts.create_workout') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add New Workout
+        </a>
+    </div>
+    
+    <!-- Filter Options -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchWorkouts" placeholder="Search workouts">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filterType">
+                        <option value="all">All Types</option>
+                        <option value="strength">Strength Training</option>
+                        <option value="cardio">Cardio</option>
+                        <option value="hiit">HIIT</option>
+                        <option value="flexibility">Flexibility</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text">Date Range</span>
+                        <input type="date" class="form-control" id="startDate">
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Workouts List -->
+    {% if workouts %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="workoutsGrid">
+            {% for workout in workouts %}
+                <div class="col workout-item" 
+                     data-name="{{ workout.name|lower }}" 
+                     data-type="{{ workout.type|lower if workout.type else 'other' }}"
+                     data-date="{{ workout.date }}">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="card-title mb-0">{{ workout.name }}</h5>
+                                <span class="badge bg-{{ 'success' if workout.type == 'strength' else 'info' if workout.type == 'cardio' else 'warning' if workout.type == 'hiit' else 'secondary' }}">
+                                    {{ workout.type|title if workout.type else 'Other' }}
+                                </span>
+                            </div>
+                            <p class="card-text text-muted">{{ workout.date.strftime('%B %d, %Y') }}</p>
+                            
+                            {% if workout.workout_exercises.count() > 0 %}
+                                <div class="mb-3">
+                                    <small class="text-muted d-block mb-1">Exercises:</small>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for workout_exercise in workout.workout_exercises.all()[:3] %}
+                                            <span class="badge bg-light text-dark border">{{ workout_exercise.exercise.name }}</span>
+                                        {% endfor %}
+                                        {% if workout.workout_exercises.count() > 3 %}
+                                            <span class="badge bg-light text-dark border">+{{ workout.workout_exercises.count() - 3 }} more</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="row text-center mt-3">
+                                <div class="col-4">
+                                    <h6 class="mb-0">{{ workout.duration or '0' }}</h6>
+                                    <small class="text-muted">Minutes</small>
+                                </div>
+                                <div class="col-4">
+                                    <h6 class="mb-0">{{ workout.workout_exercises.count() }}</h6>
+                                    <small class="text-muted">Exercises</small>
+                                </div>
+                                <div class="col-4">
+                                    <h6 class="mb-0">{{ workout.calories_burned or '0' }}</h6>
+                                    <small class="text-muted">Calories</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <div class="d-grid">
+                                <a href="{{ url_for('workouts.workout_detail', workout_id=workout.id) }}" class="btn btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- No results message -->
+        <div id="noResults" class="text-center py-5 d-none">
+            <p class="text-muted mb-0">No workouts found matching your search criteria.</p>
+        </div>
+        
+    {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-clipboard-check text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h4>No Workouts Recorded</h4>
+            <p class="text-muted">Start tracking your fitness journey by recording your workouts.</p>
+            <a href="{{ url_for('workouts.create_workout') }}" class="btn btn-primary mt-2">Add Your First Workout</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('workoutsGrid')) {
+            const searchInput = document.getElementById('searchWorkouts');
+            const filterSelect = document.getElementById('filterType');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const workoutsGrid = document.getElementById('workoutsGrid');
+            const noResults = document.getElementById('noResults');
+            const workoutItems = document.querySelectorAll('.workout-item');
+            
+            function filterWorkouts() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedType = filterSelect.value.toLowerCase();
+                const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+                const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+                
+                let visibleCount = 0;
+                
+                workoutItems.forEach(item => {
+                    const name = item.dataset.name;
+                    const type = item.dataset.type;
+                    const date = new Date(item.dataset.date);
+                    
+                    const matchesSearch = name.includes(searchTerm);
+                    const matchesType = selectedType === 'all' || type === selectedType;
+                    const matchesDate = (!startDate || date >= startDate) && (!endDate || date <= endDate);
+                    
+                    if (matchesSearch && matchesType && matchesDate) {
+                        item.classList.remove('d-none');
+                        visibleCount++;
+                    } else {
+                        item.classList.add('d-none');
+                    }
+                });
+                
+                if (visibleCount === 0) {
+                    workoutsGrid.classList.add('d-none');
+                    noResults.classList.remove('d-none');
+                } else {
+                    workoutsGrid.classList.remove('d-none');
+                    noResults.classList.add('d-none');
+                }
+            }
+            
+            searchInput.addEventListener('input', filterWorkouts);
+            filterSelect.addEventListener('change', filterWorkouts);
+            startDateInput.addEventListener('change', filterWorkouts);
+            endDateInput.addEventListener('change', filterWorkouts);
+        }
+    });
+</script>
+{% endblock %}

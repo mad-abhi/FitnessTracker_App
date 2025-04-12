@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exercise.name }} | FitTrack{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="mb-4">
+        <a href="{{ url_for('exercises.exercise_list') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Exercises
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <!-- Exercise Image -->
+                <div style="height: 300px; background-color: #f8f9fa; overflow: hidden;">
+                    {% if exercise.image_url %}
+                        <img src="{{ exercise.image_url }}" alt="{{ exercise.name }}" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body">
+                    <h2 class="card-title mb-1">{{ exercise.name }}</h2>
+                    <p class="text-muted mb-3">{{ exercise.muscle_groups }}</p>
+                    
+                    <!-- Exercise Metadata -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-circle p-3 me-3">
+                                    <i class="bi bi-trophy text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Difficulty</small>
+                                    <span>{{ exercise.difficulty or 'Not specified' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-circle p-3 me-3">
+                                    <i class="bi bi-gear text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Equipment</small>
+                                    <span>{{ exercise.equipment or 'Not specified' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-circle p-3 me-3">
+                                    <i class="bi bi-bullseye text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Primary Focus</small>
+                                    <span>{{ exercise.muscle_groups.split(', ')[0] if exercise.muscle_groups else 'Not specified' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Description and Instructions -->
+                    <div class="mb-4">
+                        <h4>Description</h4>
+                        <p>{{ exercise.description or 'No description available for this exercise.' }}</p>
+                    </div>
+                    
+                    {% if exercise.instructions %}
+                        <div>
+                            <h4>Instructions</h4>
+                            <p>{{ exercise.instructions }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Add to Workout Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Add to Workout</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('workouts.create_workout') }}" class="btn btn-primary d-block mb-3">Create New Workout</a>
+                    <div class="text-center">
+                        <span class="text-muted">or</span>
+                    </div>
+                    <!-- This would be enhanced with JavaScript to show existing workouts -->
+                    <button class="btn btn-outline-primary d-block w-100 mt-3">Add to Existing Workout</button>
+                </div>
+            </div>
+            
+            <!-- Related Exercises Card -->
+            {% if related_exercises %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Related Exercises</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for related in related_exercises %}
+                                <li class="list-group-item">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0" style="width: 60px; height: 60px; overflow: hidden; border-radius: 0.25rem;">
+                                            {% if related.image_url %}
+                                                <img src="{{ related.image_url }}" alt="{{ related.name }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                                <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                                    <i class="bi bi-image text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="ms-3">
+                                            <h6 class="mb-0">{{ related.name }}</h6>
+                                            <small class="text-muted">{{ related.muscle_groups }}</small>
+                                        </div>
+                                    </div>
+                                    <a href="{{ url_for('exercises.exercise_detail', exercise_id=related.id) }}" class="stretched-link"></a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

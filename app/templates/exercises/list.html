@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Exercises | FitTrack{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Exercise Library</h1>
+        <div>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchExercises" placeholder="Search exercises">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" id="filterMuscleGroup">
+                        <option value="all">All Muscle Groups</option>
+                        {% for group in muscle_groups %}
+                            <option value="{{ group|lower }}">{{ group }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exercise Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="exerciseGrid">
+        {% for exercise in exercises %}
+            <div class="col exercise-item" 
+                 data-name="{{ exercise.name|lower }}" 
+                 data-muscle-groups="{{ exercise.muscle_groups|lower if exercise.muscle_groups else '' }}">
+                <div class="card h-100">
+                    {% if exercise.image_url %}
+                        <img src="{{ exercise.image_url }}" class="card-img-top" alt="{{ exercise.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ exercise.name }}</h5>
+                        <p class="card-text text-muted">{{ exercise.muscle_groups }}</p>
+                        {% if exercise.difficulty %}
+                            <span class="badge bg-{{ 'success' if exercise.difficulty == 'Beginner' else 'primary' if exercise.difficulty == 'Intermediate' else 'danger' }}">
+                                {{ exercise.difficulty }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{{ url_for('exercises.exercise_detail', exercise_id=exercise.id) }}" class="btn btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- No results message -->
+    <div id="noResults" class="text-center py-5 d-none">
+        <p class="text-muted mb-0">No exercises found matching your search criteria.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchExercises');
+        const filterSelect = document.getElementById('filterMuscleGroup');
+        const exerciseGrid = document.getElementById('exerciseGrid');
+        const noResults = document.getElementById('noResults');
+        const exerciseItems = document.querySelectorAll('.exercise-item');
+        
+        function filterExercises() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedMuscleGroup = filterSelect.value.toLowerCase();
+            
+            let visibleCount = 0;
+            
+            exerciseItems.forEach(item => {
+                const name = item.dataset.name;
+                const muscleGroups = item.dataset.muscleGroups;
+                
+                const matchesSearch = name.includes(searchTerm);
+                const matchesMuscleGroup = selectedMuscleGroup === 'all' || 
+                                           (muscleGroups && muscleGroups.includes(selectedMuscleGroup));
+                
+                if (matchesSearch && matchesMuscleGroup) {
+                    item.classList.remove('d-none');
+                    visibleCount++;
+                } else {
+                    item.classList.add('d-none');
+                }
+            });
+            
+            if (visibleCount === 0) {
+                exerciseGrid.classList.add('d-none');
+                noResults.classList.remove('d-none');
+            } else {
+                exerciseGrid.classList.remove('d-none');
+                noResults.classList.add('d-none');
+            }
+        }
+        
+        searchInput.addEventListener('input', filterExercises);
+        filterSelect.addEventListener('change', filterExercises);
+    });
+</script>
+{% endblock %}
